@@ -1,0 +1,223 @@
+<!--
+Copyright (c) 2016 The Ayla Project Authors.
+This code may only be used under the MIT style license found at http://aylaweb.github.io/LICENSE.txt
+The complete set of authors may be found at http://aylaweb.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://aylaweb.github.io/CONTRIBUTORS.txt
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="vip-login-panel.html">
+
+
+<dom-module id="vip-login">                 
+    <style>
+
+        :host {
+            flex: none;
+        }
+        #closedropdown {
+            top: 52px;
+            border-radius: 10px; 
+        }
+        #closedropdownmenu ::content closedropdown ::shadow paper-shadow{
+            border-radius: 10px;
+        }
+
+    </style>
+    <template id="template_vip_login">
+        <!-- <template is="dom-if" if="{{loggedIn}}"> -->
+            <paper-icon-button id="login" icon="icons:account-circle" on-click='_onclickloginbuttonHandler'></paper-icon-button>
+        <!-- </template> -->
+        <!--  <template is="dom-if"  if="{{ loggedIn }}">         
+              <paper-dropdown-menu id="closedropdownmenu" label="{{ loggedUser }}">
+                  <paper-dropdown id="closedropdown" class="dropdown">          
+                      <paper-item id="close" on-click="{{onclickcloseHandler}}">Close Session</paper-item>
+                  </paper-dropdown>
+              </paper-dropdown-menu>
+          </template> -->
+        <vip-login-panel no-cancel-on-outside-click id='loginpanel' on-cancellogin='_oncancelloginHandler'></vip-login-panel>
+        <!-- <vip-login-panel with-backdrop no-cancel-on-outside-click id='loginpanel' on-requestlogin='_onrequestloginHandler' on-cancellogin='_oncancelloginHandler'></vip-login-panel> -->
+    </template>
+    <script>
+        Polymer({
+            is: 'vip-login',
+            properties: {
+                icon: {
+                    type: String,
+                    value: 'av:pause'},
+                dialogOpened: {
+                    type: Boolean,
+                    value: false
+                },
+                loggedIn: {
+                    type: Boolean,
+                    value: false
+                },
+                loggedUser: {
+                    type: String,
+                    value: ''
+                },
+                login: {
+                    type: Boolean,
+                    value: true
+                },
+                register: {
+                    type: Boolean,
+                    value: false
+                },              
+                message: {
+                    type: String,
+                    value: ''
+                }
+            },
+            listeners:{
+              requestlogin: '_onrequestloginHandler',
+              requestregister: '_onrequestregisterHandler'
+            },
+            _username: '',
+            _password: '',
+            created: function () {
+                console.log(this.id + " -> vip-login -> Event created");
+            },
+            attached: function () {
+                console.log(this.id + " -> vip-login -> Event attached");
+            },
+            ready: function () {
+                console.log(this.id + " -> vip-login -> Event ready");
+                /* this.dialog = this.$.dialog_login;
+                 var root = this.dialog.shadowRoot;
+                 var scopeStyle = document.createElement('core-style');
+                 // if not inserted last the styles don't apply properly. Lasy in priority
+                 root.insertBefore(scopeStyle, root.lastChild);
+                 var tagname = (this.tagName.toLowerCase().slice(-2) === "-r") ? this.tagName.toLowerCase().slice(0, -2) : this.tagName.toLowerCase();
+                 scopeStyle.applyRef(tagname); */
+            },
+            detached: function () {
+                console.log(this.id + " -> vip-login -> Event detached");
+            },
+            dialogOpenedChanged: function (old, val) {
+                if (val) {
+                    this.dialog.open();
+                    this.dialogOpened = true;
+                }
+                else {
+                    this.dialog.close();
+                    this.dialogOpened = false;
+                }
+            },
+            _onclickHandler: function (e)
+            {
+               // console.log("asdasd");
+            },
+            _onclickloginbuttonHandler: function () {
+                if (!this.loggedIn) {
+                    this.$.loginpanel.open();
+                }
+                else {
+                    this.performLogoutAction();
+                }
+            },
+            onclickloginusernameHandler: function () {
+                if (!this.dialogOpened)
+                    this.dialogOpened = true;
+            },
+            onclickcancelHandler: function (e) {
+                this.dialogOpened = false;
+            },
+            _onrequestloginHandler: function (e) {
+                this._username = e.detail.username;
+                this._password = e.detail.password;
+                this.performLoginAction(this._username, this._password);
+            },
+            
+             _onrequestregisterHandler: function (e) {
+                this._username = e.detail.username;
+                this._password = e.detail.password;
+                this.performRegisterAction(this._username, this._password);
+            },
+            
+             _oncancelloginHandler: function (e) {
+                this.$.loginpanel.close();
+            },
+            onkeypresspasswordHandler: function (e) {
+                this.$.password.commit();
+                if (e.which === 13) {
+                    this.performLoginAction();
+                }
+            },
+            onclickcloseHandler: function (e) {
+                this.loggedIn = false;
+                this.performLogoutAction();
+            },
+            performLogoutAction: function () {
+                this.fire("logout",
+                        {callback: this.processLogoutResult.bind(this)});
+            },
+            performLoginAction: function (username, password) {
+                this.fire("loginwithpassword",
+                        {username: username, password: password, rememberMe: this.rememberMe, callback: this.processLoginResult.bind(this)});
+            },
+            performRegisterAction: function (username, password) {
+                this.fire("createuser",
+                        {username: username, password: password, callback: this.processCreateUserResult.bind(this)});
+            },
+            processLoginResult: function (error) {
+                if (error)
+                {
+                    this.$.loginpanel.message = error.reason;
+                }
+                else {
+                    this.loggedIn = true;
+                    this.$.loginpanel.close();
+                    this.loggedUser = this._username;
+                    this.$.login.icon="av:album";
+                }
+            },
+            
+            processCreateUserResult: function (error) {
+                if (error)
+                {
+                    this.$.loginpanel.message = error.reason;
+                }
+                else {
+                   
+                }
+            },
+            
+            processLogoutResult: function (error) {
+                if (error)
+                {
+                    this.message = error.reason;
+                }
+                else {
+                    this.loggedUser = '';
+                    this.loggedIn = false;
+                    this.$.login.icon="av:pause";
+                }
+            },
+            usernameValidator: function (username) {
+                var errorKey;
+                // check for swear words, etc. Form field is validating that it is an Email address (thought it does say 'foo@abc" is valid, so there's that).
+                var valid = true;
+                if (!valid) {
+                    errorKey = "usernameMustBeValidEmail";
+                }
+                return {valid: valid, errorKey: errorKey};
+            },
+            /**
+             * Set this validator function if you want a better one.
+             */
+            passwordValidator: function (password) {
+                var errorKey;
+                var valid = password.length > 7;
+                if (!valid) {
+                    errorKey = "passwordTooShort";
+                }
+                return {valid: valid, errorKey: errorKey};
+            }
+
+        });
+    </script>
+</dom-module>

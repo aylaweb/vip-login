@@ -1,0 +1,149 @@
+<!--
+Copyright (c) 2016 The Ayla Project Authors.
+This code may only be used under the MIT style license found at http://aylaweb.github.io/LICENSE.txt
+The complete set of authors may be found at http://aylaweb.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://aylaweb.github.io/CONTRIBUTORS.txt
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../neon-animation/web-animations.html">
+<link rel="import" href="../iron-overlay-behavior/iron-overlay-behavior.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+
+<dom-module id="vip-login-panel">
+
+    <style is='custom-style'>
+        /* Custom properties that inherit down the document tree may be defined */
+        * {
+            --iron-icon-size: 15px;
+        }
+
+    </style>
+
+    <style>
+
+        :host {
+            background: white;
+            color: black;
+            padding: 10px;
+            transition: border 0.30s ease-in-out;
+            box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+            // box-shadow: rgba(0, 0, 0, 0.24) -2.3408942051048403px 5.524510324047423px 12.090680100755666px 0px, rgba(0, 0, 0, 0.12) 0px 0px 12px 0px;
+            border: 1px solid rgba(81, 203, 238, 1);
+        }
+
+
+        .main {
+            position: relative;
+        }
+        #cancel {
+            position: absolute;
+            top: 0px;
+            right: 0px;
+        }
+
+    </style>
+
+    <template>
+        <div id='container_viploginpanel'>
+            <paper-icon-button id="cancel" icon="icons:cancel" on-click='_onclickCancelHandler'></paper-icon-button>
+            <div class="layout vertical">
+                <template is="dom-if" if="{{mode}}">
+                    <paper-item id="action">Login</paper-item>
+                </template>
+                <template is="dom-if" if="{{!mode}}">
+                    <paper-item id="action">Register</paper-item>
+                </template>
+                <paper-item id="messages">{{message}}</paper-item>
+            </div>
+            <paper-input id="username" placeholder="Email" on-keyup='_onkeyupHandler' on-focus='_onfocusHandler'></paper-input>
+            <paper-input id="password" placeholder="password" on-keyup='_onkeyupHandler' on-focus='_onfocusHandler'></paper-input>
+            <template is="dom-if" if="{{mode}}">
+                <paper-item id="wishregister">Need Register?</paper-item>
+            </template>
+            <template is="dom-if" if="{{!mode}}">
+                <paper-item id="wishlogin">Login?</paper-item>
+            </template>
+            <paper-icon-button icon="icons:forward" id="register" on-click='_onclickchangemodeHandler'></paper-icon-button>
+        </div>
+    </template>
+
+</dom-module>
+
+<script>
+
+
+
+    Polymer({
+        is: 'vip-login-panel',
+        properties: {
+            mode: {
+                type: Boolean,
+                value: true,
+                observer: '_modeChanged'
+            },
+            message: {
+                type: String,
+                value:'',
+                observer: '_messageChanged'
+            },
+            invalid: {
+                type: Boolean,
+                value: false
+            }
+        },
+        behaviors: [
+            Polymer.IronOverlayBehavior
+        ],
+        
+        _messageChanged: function(val)
+        {
+        },
+        
+         _onfocusHandler: function (e) {
+            this.message = '';
+        },
+        _onkeyupHandler: function (e) {
+            //this.errorMessage = '';
+            if (e.keyCode == '13') {
+                var detail = {};
+                detail.username = this.$.username.value;
+                detail.password = this.$.password.value;
+                if (this.mode) {
+                    this.fire('requestlogin', detail);
+                }
+                else {
+                    this.fire('requestregister', detail);
+                }
+            }
+        },
+        _onclickloginHandler: function () {
+            var detail = {};
+            detail.username = this.$.username.value;
+            detail.password = this.$.password.value;
+            this.fire('requestlogin', detail);
+        },
+        _onclickchangemodeHandler: function () {
+            this.animate([{
+                    "transform": "rotateY(0deg)"
+                }, {
+                    "transform": "rotateY(360deg)"
+                }], {
+                duration: 500
+            });
+            this.mode = !this.mode;
+        },
+        _onclickCancelHandler: function () {
+            this.fire('cancellogin', {});
+        },
+        _modeChanged: function () {
+        }
+
+    });
+
+
+
+</script>
